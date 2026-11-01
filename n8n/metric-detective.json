@@ -1,0 +1,324 @@
+{
+  "name": "Metric Detective - Daily RCA (sample quick commerce)",
+  "nodes": [
+    {
+      "id": "n1",
+      "name": "Run Demo Days",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "n2",
+      "name": "Every Morning 8 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        420
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 8,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "n3",
+      "name": "Pick Demo Days",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        200
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Replays the demo days: two planted incidents, the campaign mix shift, the planned sale and a normal day.\nreturn ['2026-08-31', '2026-09-09', '2026-09-15', '2026-09-17', '2026-09-23'].map(function (d) { return { json: { date: d } }; });"
+      }
+    },
+    {
+      "id": "n4",
+      "name": "Pick Replay Day",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        420
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// The sample data covers 2026-07-29 to 2026-09-28. Each real day replays the next sample day, looping.\nconst first = Date.UTC(2026, 6, 29);\nconst daysSince = Math.floor((Date.now() - Date.UTC(2026, 10, 1)) / 86400000);\nconst offset = ((daysSince % 62) + 62) % 62;\nreturn [{ json: { date: new Date(first + offset * 86400000).toISOString().slice(0, 10) } }];"
+      }
+    },
+    {
+      "id": "n5",
+      "name": "Detect and Explain",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "// ===== Sample data generator (replace generate() with a query on your own warehouse) =====\n// ZipBasket (fictional 10-minute grocery app): deterministic sample data with planted incidents.\n// Pure JS, no dependencies, so the same code runs inside an n8n Code node.\n\nfunction makeRng(seed) {\n  let a = seed >>> 0;\n  return function () {\n    a = (a + 0x6D2B79F5) >>> 0;\n    let t = a;\n    t = Math.imul(t ^ (t >>> 15), t | 1);\n    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);\n    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;\n  };\n}\n\nconst START = '2026-07-01';\nconst DAYS = 90;\nconst CITIES = {\n  Bengaluru: { base: 4200, stores: ['Koramangala', 'Indiranagar', 'HSR Layout', 'Whitefield', 'Jayanagar'] },\n  Delhi: { base: 4000, stores: ['Saket', 'Dwarka', 'Rohini', 'Lajpat Nagar', 'Karol Bagh'] },\n  Mumbai: { base: 3800, stores: ['Andheri', 'Bandra', 'Powai', 'Thane', 'Dadar'] },\n  Hyderabad: { base: 3000, stores: ['Gachibowli', 'Madhapur', 'Kondapur', 'Banjara Hills', 'Kukatpally'] }\n};\nconst WEEKDAY = [1.15, 0.92, 0.90, 0.93, 0.95, 1.05, 1.18]; // Sun..Sat\nconst USERS = {\n  new: { share: 0.15, checkout: 0.115, items: 3.6 },\n  repeat: { share: 0.85, checkout: 0.17, items: 5.4 }\n};\nconst PAYMENTS = { UPI: { share: 0.70, success: 0.94 }, Card: { share: 0.15, success: 0.92 }, COD: { share: 0.15, success: 0.99 } };\nconst CATEGORIES = {\n  dairy: { share: 0.22, price: 55 }, fruits_veg: { share: 0.25, price: 60 }, snacks: { share: 0.18, price: 90 },\n  beverages: { share: 0.12, price: 85 }, staples: { share: 0.15, price: 110 }, personal_care: { share: 0.08, price: 150 }\n};\nconst NEW_USER_PRICE_FACTOR = 0.92; // new users buy slightly cheaper baskets\n\n// Business calendar the agent is told about (known events are not alerts).\nconst CALENDAR = [{ day: 84, name: 'ZipBasket Anniversary Sale (planned, all cities)' }];\n\n// Planted incidents (the agent is NOT told about these).\nconst INCIDENTS = [\n  { id: 'upi_failure', days: [61, 62], city: 'Bengaluru', note: 'UPI success rate collapses in Bengaluru; some users retry with card' },\n  { id: 'dairy_stockout', days: [70, 71], city: 'Delhi', stores: ['Saket', 'Dwarka', 'Rohini'], note: 'Dairy out of stock most of the day in 3 Delhi stores' },\n  { id: 'new_user_campaign', days: [78, 79, 80], note: 'Acquisition campaign triples new-user traffic; every segment behaves normally (mix shift)' },\n  { id: 'anniversary_sale', days: [84], note: 'Planned sale, in the business calendar; should not alert' }\n];\n\nfunction dateOf(d) {\n  const t = new Date(START + 'T00:00:00Z');\n  t.setUTCDate(t.getUTCDate() + d);\n  return t.toISOString().slice(0, 10);\n}\n\nfunction generate(seed) {\n  const rnd = makeRng(seed || 42);\n  const noise = sd => { let s = 0; for (let i = 0; i < 6; i++) s += rnd(); return Math.exp((s - 3) * Math.sqrt(2) * sd); };\n  const funnel = [];   // date, city, store, user_type: sessions, checkouts\n  const orders = [];   // date, city, store, user_type, payment: checkouts, orders, gmv, items\n  const cats = [];     // date, city, store, category: items, gmv, stockout_hours\n  const storeFactor = {};\n  for (const [city, c] of Object.entries(CITIES)) c.stores.forEach(s => { storeFactor[s] = 0.8 + 0.4 * rnd(); });\n\n  for (let d = 0; d < DAYS; d++) {\n    const date = dateOf(d);\n    const wd = new Date(date + 'T00:00:00Z').getUTCDay();\n    const trend = 1 + 0.0015 * d;\n    const sale = d === 84;\n    const campaign = [78, 79, 80].includes(d);\n    for (const [city, c] of Object.entries(CITIES)) {\n      for (const store of c.stores) {\n        const storeSessions = c.base * storeFactor[store] * WEEKDAY[wd] * trend * noise(0.022) * (sale ? 1.7 : 1);\n        const stockout = INCIDENTS[1].days.includes(d) && city === 'Delhi' && INCIDENTS[1].stores.includes(store);\n        const upiDown = INCIDENTS[0].days.includes(d) && city === 'Bengaluru';\n        const catItems = {};\n        for (const [ut, u] of Object.entries(USERS)) {\n          const sessions = Math.round(storeSessions * u.share * (campaign && ut === 'new' ? 3.2 : 1) * noise(0.012));\n          const checkoutRate = u.checkout * noise(0.012) * (sale ? 1.1 : 1) * (stockout ? 0.94 : 1);\n          const checkouts = Math.round(sessions * checkoutRate);\n          funnel.push({ date, city, store, user_type: ut, sessions, checkouts });\n          let retryToCard = 0;\n          for (const [pm, p] of Object.entries(PAYMENTS)) {\n            let pmCheckouts = Math.round(checkouts * p.share * noise(0.008));\n            let success = p.success * noise(0.006);\n            if (pm === 'UPI' && upiDown) { success = 0.52 * noise(0.03); retryToCard = Math.round(pmCheckouts * (1 - success) * 0.35); }\n            if (pm === 'Card') pmCheckouts += retryToCard;\n            const ords = Math.min(pmCheckouts, Math.round(pmCheckouts * Math.min(success, 0.995)));\n            const itemsPerOrder = u.items * noise(0.012) * (stockout ? 0.80 : 1);\n            const items = Math.round(ords * itemsPerOrder);\n            let gmv = 0;\n            for (const [cat, cc] of Object.entries(CATEGORIES)) {\n              let share = cc.share;\n              if (stockout) share = cat === 'dairy' ? cc.share * 0.12 : cc.share * (1 + (0.22 * 0.88 * 0.3) / 0.78);\n              const ci = items * share;\n              const cg = ci * cc.price * (ut === 'new' ? NEW_USER_PRICE_FACTOR : 1) * noise(0.01);\n              catItems[cat] = catItems[cat] || { items: 0, gmv: 0 };\n              catItems[cat].items += ci; catItems[cat].gmv += cg; gmv += cg;\n            }\n            orders.push({ date, city, store, user_type: ut, payment: pm, checkouts: pmCheckouts, orders: ords, gmv: Math.round(gmv), items });\n          }\n        }\n        for (const [cat, v] of Object.entries(catItems)) {\n          const so = stockout && cat === 'dairy' ? 14 + Math.round(rnd() * 4) : (rnd() < 0.03 ? 1 + Math.round(rnd() * 2) : 0);\n          cats.push({ date, city, store, category: cat, items: Math.round(v.items), gmv: Math.round(v.gmv), stockout_hours: so });\n        }\n      }\n    }\n  }\n  return { start: START, days: DAYS, funnel, orders, cats, calendar: CALENDAR.map(e => ({ date: dateOf(e.day), name: e.name })) };\n}\n\n\n// ===== Detection and root cause (no AI) =====\n// Metric Detective: anomaly detection + root cause (mix vs rate) on daily data. No AI, no dependencies.\n\nconst KPIS = ['gmv', 'orders', 'aov', 'sessions', 'conversion'];\nconst THRESH = { total: 0.05, city: 0.08, store: 0.15 }; // minimum % move to alert, per scope\nconst Z_MIN = 3;\nconst FLOOR = { total: 0.015, city: 0.025, store: 0.04 }; // minimum noise level assumed, per scope\n\nfunction buildIndex(D) {\n  const byDate = {};\n  const add = (date, key, row) => { (byDate[date] = byDate[date] || { funnel: [], orders: [], cats: [] })[key].push(row); };\n  D.funnel.forEach(r => add(r.date, 'funnel', r));\n  D.orders.forEach(r => add(r.date, 'orders', r));\n  D.cats.forEach(r => add(r.date, 'cats', r));\n  return { byDate, dates: Object.keys(byDate).sort(), calendar: D.calendar || [] };\n}\n\nconst inScope = (r, scope) => !scope || ((!scope.city || r.city === scope.city) && (!scope.store || r.store === scope.store));\n\nfunction totals(idx, dates, scope) {\n  const t = { sessions: 0, checkouts: 0, pay_checkouts: 0, orders: 0, gmv: 0, items: 0 };\n  for (const d of dates) {\n    const b = idx.byDate[d];\n    b.funnel.forEach(r => { if (inScope(r, scope)) { t.sessions += r.sessions; t.checkouts += r.checkouts; } });\n    b.orders.forEach(r => { if (inScope(r, scope)) { t.pay_checkouts += r.checkouts; t.orders += r.orders; t.gmv += r.gmv; t.items += r.items; } });\n  }\n  const n = dates.length;\n  Object.keys(t).forEach(k => { t[k] /= n; });\n  t.aov = t.gmv / t.orders; t.conversion = t.orders / t.sessions; t.checkout_rate = t.checkouts / t.sessions;\n  t.payment_success = t.orders / t.pay_checkouts; t.items_per_order = t.items / t.orders; t.price_per_item = t.gmv / t.items;\n  return t;\n}\n\nfunction baselineDates(idx, date) {\n  const i = idx.dates.indexOf(date);\n  const out = [];\n  for (let k = 1; k <= 4; k++) if (i - 7 * k >= 0) out.push(idx.dates[i - 7 * k]);\n  return out.length === 4 ? out : null;\n}\n\nfunction median(a) { const s = a.slice().sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }\n\nfunction check(idx, date, scope, level) {\n  const base = baselineDates(idx, date);\n  if (!base) return [];\n  const now = totals(idx, [date], scope);\n  const hist = base.map(d => totals(idx, [d], scope));\n  const out = [];\n  for (const k of KPIS) {\n    const vals = hist.map(h => h[k]);\n    const med = median(vals);\n    const mad = median(vals.map(v => Math.abs(v - med))) * 1.4826;\n    const scale = Math.max(mad, FLOOR[level] * Math.abs(med));\n    const pct = (now[k] - med) / med;\n    const z = (now[k] - med) / scale;\n    if (Math.abs(pct) >= THRESH[level] && Math.abs(z) >= Z_MIN) out.push({ level, scope: scope || {}, kpi: k, now: now[k], usual: med, pct, z });\n  }\n  return out;\n}\n\nfunction detect(idx, date) {\n  const cityOf = {};\n  idx.byDate[date].funnel.forEach(r => { cityOf[r.store] = r.city; });\n  const cities = [...new Set(Object.values(cityOf))];\n  let alerts = check(idx, date, null, 'total');\n  cities.forEach(c => { alerts = alerts.concat(check(idx, date, { city: c }, 'city')); });\n  Object.keys(cityOf).forEach(s => { alerts = alerts.concat(check(idx, date, { city: cityOf[s], store: s }, 'store')); });\n  const event = idx.calendar.find(e => e.date === date);\n  return { date, event: event ? event.name : null, alerts: event ? [] : alerts, suppressed: event ? alerts.length : 0 };\n}\n\n// Mix vs rate for a ratio metric R = sum(num) / sum(den) split by a dimension.\nfunction mixRate(rows0, rows1, dim, num, den, n0) {\n  const seg = {};\n  const put = (rows, which, div) => rows.forEach(r => {\n    const k = r[dim]; seg[k] = seg[k] || { n0: 0, d0: 0, n1: 0, d1: 0 };\n    seg[k][which === 0 ? 'n0' : 'n1'] += r[num] / div; seg[k][which === 0 ? 'd0' : 'd1'] += r[den] / div;\n  });\n  put(rows0, 0, n0); put(rows1, 1, 1);\n  const D0 = Object.values(seg).reduce((a, s) => a + s.d0, 0), D1 = Object.values(seg).reduce((a, s) => a + s.d1, 0);\n  const N0 = Object.values(seg).reduce((a, s) => a + s.n0, 0), N1 = Object.values(seg).reduce((a, s) => a + s.n1, 0);\n  const R0 = N0 / D0, R1 = N1 / D1;\n  let mix = 0, rate = 0;\n  const segs = Object.entries(seg).map(([k, s]) => {\n    const w0 = s.d0 / D0, w1 = s.d1 / D1, r0 = s.d0 ? s.n0 / s.d0 : 0, r1 = s.d1 ? s.n1 / s.d1 : 0;\n    const m = (w1 - w0) * (r0 - R0), rt = w1 * (r1 - r0);\n    mix += (w1 - w0) * r0; rate += rt;\n    return { segment: k, share_before: w0, share_now: w1, rate_before: r0, rate_now: r1, mix_effect: m, rate_effect: rt };\n  });\n  segs.sort((a, b) => Math.abs(b.rate_effect) + Math.abs(b.mix_effect) - Math.abs(a.rate_effect) - Math.abs(a.mix_effect));\n  const totalAbsRate = segs.reduce((a, x) => a + Math.abs(x.rate_effect), 0) || 1;\n  return { dim, before: R0, now: R1, change: R1 - R0, mix_effect: mix, rate_effect: rate, concentration: Math.abs(segs[0].rate_effect) / totalAbsRate, segments: segs.length, top: segs.slice(0, 3) };\n}\n\nfunction rowsFor(idx, dates, scope, key) {\n  let out = [];\n  dates.forEach(d => { out = out.concat(idx.byDate[d][key].filter(r => inScope(r, scope))); });\n  return out;\n}\n\n// Join funnel + orders at store x user_type so conversion can be split by user type, city or store.\nfunction userRows(idx, dates, scope) {\n  const m = {};\n  rowsFor(idx, dates, scope, 'funnel').forEach(r => { const k = r.date + r.store + r.user_type; m[k] = Object.assign({ orders: 0, gmv: 0, items: 0 }, r); });\n  rowsFor(idx, dates, scope, 'orders').forEach(r => { const k = r.date + r.store + r.user_type; m[k].orders += r.orders; m[k].gmv += r.gmv; m[k].items += r.items; });\n  return Object.values(m);\n}\n\nfunction explain(idx, date, alerts) {\n  const alert = alerts[0];\n  const scope = alert.scope && alert.scope.city ? alert.scope : null;\n  const base = baselineDates(idx, date);\n  const b = totals(idx, base, scope), n = totals(idx, [date], scope);\n  const ln = (x, y) => Math.log(x / y);\n  const gmvL = ln(n.gmv, b.gmv);\n  const tree = {\n    gmv: { before: b.gmv, now: n.gmv },\n    orders: { before: b.orders, now: n.orders, share_of_gmv_change: ln(n.orders, b.orders) / gmvL },\n    aov: { before: b.aov, now: n.aov, share_of_gmv_change: ln(n.aov, b.aov) / gmvL },\n    sessions: { before: b.sessions, now: n.sessions },\n    conversion: { before: b.conversion, now: n.conversion },\n    checkout_rate: { before: b.checkout_rate, now: n.checkout_rate },\n    payment_success: { before: b.payment_success, now: n.payment_success },\n    items_per_order: { before: b.items_per_order, now: n.items_per_order },\n    price_per_item: { before: b.price_per_item, now: n.price_per_item }\n  };\n  const u0 = userRows(idx, base, scope), u1 = userRows(idx, [date], scope);\n  const p0 = rowsFor(idx, base, scope, 'orders'), p1 = rowsFor(idx, [date], scope, 'orders');\n  const dims = [\n    mixRate(u0, u1, 'user_type', 'orders', 'sessions', base.length),\n    mixRate(p0, p1, 'payment', 'orders', 'checkouts', base.length),\n    mixRate(u0, u1, 'user_type', 'gmv', 'orders', base.length)\n  ];\n  dims[0].metric = 'conversion'; dims[1].metric = 'payment_success'; dims[2].metric = 'aov';\n  if (!scope || !scope.store) {\n    const geo = scope ? 'store' : 'city';\n    const a = mixRate(u0, u1, geo, 'orders', 'sessions', base.length); a.metric = 'conversion'; dims.push(a);\n    const c = mixRate(u0, u1, geo, 'gmv', 'orders', base.length); c.metric = 'aov'; dims.push(c);\n    const pg = mixRate(p0.filter(r => r.payment === 'UPI'), p1.filter(r => r.payment === 'UPI'), geo, 'orders', 'checkouts', base.length); pg.metric = 'upi_success'; dims.push(pg);\n  }\n  const c0 = rowsFor(idx, base, scope, 'cats'), c1 = rowsFor(idx, [date], scope, 'cats');\n  const cat = {};\n  c0.forEach(r => { cat[r.category] = cat[r.category] || { items_before: 0, items_now: 0, stockout_hours_now: 0 }; cat[r.category].items_before += r.items / base.length; });\n  c1.forEach(r => { cat[r.category].items_now += r.items; cat[r.category].stockout_hours_now += r.stockout_hours; });\n  const categories = Object.entries(cat).map(([k, v]) => ({ category: k, items_before: v.items_before, items_now: v.items_now, change: v.items_now / v.items_before - 1, stockout_hours_now: v.stockout_hours_now }))\n    .sort((x, y) => Math.abs(y.change) - Math.abs(x.change)).slice(0, 3);\n  // Verdict: is the alerting ratio metric moved by mix or by behaviour?\n  // Verdict per ratio metric that alerted: moved by mix (who showed up) or by behaviour (what they did)?\n  const verdicts = {};\n  alerts.filter(a => ['aov', 'conversion'].includes(a.kpi)).forEach(a => {\n    const userSplit = dims.find(d => d.metric === a.kpi && d.dim === 'user_type');\n    verdicts[a.kpi] = userSplit && Math.abs(userSplit.mix_effect) > 2 * Math.abs(userSplit.rate_effect) ? 'mix_shift' : 'behaviour_change';\n  });\n  return { date, scope: alert.scope, alerts: alerts.map(a => ({ kpi: a.kpi, now: a.now, usual: a.usual, pct: a.pct })), baseline_days: base, tree, drivers: dims, categories, verdicts };\n}\n\n// One run: detect, keep the most important alerts, explain each distinct scope.\nfunction run(D, date) {\n  const idx = buildIndex(D);\n  const det = detect(idx, date);\n  const rank = { total: 0, city: 1, store: 2 };\n  const scopeKey = a => (a.scope.city || 'all') + '/' + (a.scope.store || '');\n  const seen = {};\n  const picked = [];\n  det.alerts.sort((a, b) => rank[a.level] - rank[b.level] || Math.abs(b.z) - Math.abs(a.z)).forEach(a => {\n    const k = scopeKey(a);\n    const coveredByCity = a.level === 'store' && seen[a.scope.city + '/'];\n    const coveredByTotal = a.level !== 'total' && seen['all/'];\n    if (seen[k] || coveredByCity || coveredByTotal) return;\n    seen[k] = true; picked.push(a);\n  });\n  const allFor = a => det.alerts.filter(x => scopeKey(x) === scopeKey(a)).sort((p, q) => Math.abs(q.z) - Math.abs(p.z));\n  const findings = picked.map(a => {\n    const f = explain(idx, date, allFor(a));\n    f.level = a.level;\n    f.stores_also_alerting = [...new Set(det.alerts.filter(x => x.level === 'store' && (a.level === 'total' || x.scope.city === a.scope.city)).map(x => x.scope.store))];\n    return f;\n  });\n  return { date, event: det.event, suppressed_alerts: det.suppressed, alert_count: det.alerts.length, alerts: det.alerts.map(a => ({ level: a.level, scope: a.scope, kpi: a.kpi, pct: a.pct })), findings };\n}\n\n\n// ===== Fact lines for the write-up =====\n// Turns a run result into plain-English fact lines with fixed, pre-formatted numbers.\n// The AI may only use these numbers; the checker compares against them.\n\nconst pct = x => (x * 100).toFixed(1) + '%';\nconst chg = x => (x >= 0 ? '+' : '') + (x * 100).toFixed(1) + '%';\nconst inr = x => 'Rs ' + Math.round(x).toLocaleString('en-IN');\nconst n0 = x => Math.round(x).toLocaleString('en-IN');\nconst NAMES = { gmv: 'GMV', orders: 'orders', aov: 'average order value', sessions: 'app sessions', conversion: 'conversion (orders per session)' };\nconst fmtKpi = (k, v) => k === 'gmv' || k === 'aov' ? inr(v) : (k === 'conversion' ? pct(v) : n0(v));\nconst DIM = { user_type: 'user type', payment: 'payment method', city: 'city', store: 'store' };\nconst METRIC = { conversion: 'conversion', payment_success: 'payment success rate', aov: 'average order value', upi_success: 'UPI payment success rate' };\nconst fmtRate = (m, v) => m === 'aov' ? inr(v) : pct(v);\n\nfunction facts(result) {\n  const lines = [];\n  if (result.event) lines.push(`Known event today: ${result.event}. ${result.suppressed_alerts} alerts were suppressed because the business calendar expects unusual numbers.`);\n  result.findings.forEach((f, i) => {\n    const where = f.scope.store ? `${f.scope.store} store (${f.scope.city})` : (f.scope.city ? f.scope.city : 'all cities');\n    lines.push(`FINDING ${i + 1}: ${where}, ${result.date}, compared with the average of the same weekday over the previous 4 weeks.`);\n    const t = f.tree;\n    f.alerts.forEach(a => { const u = t[a.kpi].before, v = t[a.kpi].now; lines.push(`- ${NAMES[a.kpi]}: usual ${fmtKpi(a.kpi, u)}, today ${fmtKpi(a.kpi, v)} (${chg(v / u - 1)}).`); });\n    lines.push(`- Funnel, usual vs today: app sessions ${n0(t.sessions.before)} vs ${n0(t.sessions.now)}; checkout rate ${pct(t.checkout_rate.before)} vs ${pct(t.checkout_rate.now)}; payment success ${pct(t.payment_success.before)} vs ${pct(t.payment_success.now)}; items per order ${t.items_per_order.before.toFixed(2)} vs ${t.items_per_order.now.toFixed(2)}.`);\n    f.drivers.forEach(d => {\n      const big = Math.abs(d.rate_effect) + Math.abs(d.mix_effect);\n      const rel = big / (d.metric === 'aov' ? d.before : Math.max(d.before, 1e-9));\n      if (rel < 0.02) return;\n      if (['city', 'store'].includes(d.dim) && d.concentration < 0.5) return; // spread evenly across places: not a local cause\n      const s = d.top[0];\n      const kind = Math.abs(d.mix_effect) > 2 * Math.abs(d.rate_effect) ? 'MIX (the share of each group changed, not their behaviour)' : 'BEHAVIOUR (a group behaved differently)';\n      lines.push(`- ${METRIC[d.metric]} by ${DIM[d.dim]}: overall ${fmtRate(d.metric, d.before)} -> ${fmtRate(d.metric, d.now)}; driver type ${kind}. Biggest segment: ${s.segment}, ${fmtRate(d.metric, s.rate_before)} -> ${fmtRate(d.metric, s.rate_now)}, share ${pct(s.share_before)} -> ${pct(s.share_now)}.`);\n    });\n    const itemsChange = (t.orders.now * t.items_per_order.now) / (t.orders.before * t.items_per_order.before) - 1;\n    f.categories.filter(c => Math.abs((1 + c.change) / (1 + itemsChange) - 1) >= 0.15 || c.stockout_hours_now >= 6).forEach(c =>\n      lines.push(`- Category ${c.category}: items ${n0(c.items_before)} usual vs ${n0(c.items_now)} today (${chg(c.change)}); out-of-stock hours today across stores ${c.stockout_hours_now}.`));\n    Object.entries(f.verdicts || {}).forEach(([k, v]) => lines.push(`- Verdict for ${NAMES[k]}: ${v === 'mix_shift' ? 'MIX SHIFT. Each user group behaved normally; the drop comes from more low-spend or low-converting users in the mix. Not a problem in itself.' : 'BEHAVIOUR CHANGE. Something changed for a specific group.'}`));\n    const st = f.stores_also_alerting;\n    if (st.length) lines.push(st.length > 5 ? `- ${st.length} of 20 stores also moved beyond their own thresholds.` : `- Stores also alerting: ${st.join(', ')}.`);\n  });\n  return lines;\n}\n\n// Numbers allowed in the email = numbers in the fact lines (plus the date parts).\nfunction numbersIn(s) {\n  return (String(s).replace(/(\\d),(?=\\d)/g, '$1').match(/\\d+(?:\\.\\d+)?/g) || []);\n}\n\nfunction checkNumbers(text, factLines) {\n  const allowed = new Set(numbersIn(factLines.join(' ')));\n  const bad = numbersIn(text).filter(n => !allowed.has(n));\n  return { ok: bad.length === 0, bad: [...new Set(bad)] };\n}\n\n\n// ===== Run for this item's date =====\nconst date = $json.date;\nconst result = run(generate(42), date);\nconst lines = facts(result);\nreturn { json: {\n  date: date,\n  findings: result.findings.length,\n  event: result.event,\n  suppressed_alerts: result.suppressed_alerts,\n  facts: lines,\n  user_prompt: 'DATE: ' + date + '\\nFACTS:\\n' + lines.join('\\n')\n} };"
+      }
+    },
+    {
+      "id": "n6",
+      "name": "Anything To Report?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        680,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.findings }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "n7",
+      "name": "Write Alert Email",
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        900,
+        220
+      ],
+      "parameters": {
+        "resource": "text",
+        "operation": "message",
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "claude-sonnet-5-5"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.user_prompt }}",
+              "role": "user"
+            }
+          ]
+        },
+        "simplify": true,
+        "options": {
+          "system": "You write the morning metrics alert email for the analytics team of ZipBasket, a 10-minute grocery delivery app.\nYou get FACTS computed by code. Rules:\n1. Use only the facts. Every number you write must be copied exactly as it appears in the facts, with the same rounding and format. Never calculate, round or combine numbers yourself.\n2. Lead with what moved and where, then why. Name the specific segment behind the change (city, store, payment method, user type, category).\n3. If a verdict says MIX SHIFT, say plainly that each user group behaved normally, more low-spend or low-converting users arrived, and no fix is needed beyond confirming why (do not guess the reason).\n4. If a verdict says BEHAVIOUR CHANGE, end with 2 or 3 concrete checks for today (which team or system to look at). No numbers in the checks.\n5. Do not mention anything that is not in the facts. No greetings, no sign-off, under 170 words.\nReturn only JSON: {\"subject\": \"max 70 characters, starts with the place and the metric\", \"body\": \"plain text with short lines; use - for bullets\"}",
+          "maxTokens": 3000,
+          "includeMergedResponse": true
+        }
+      },
+      "credentials": {
+        "anthropicApi": {
+          "name": "YOUR Anthropic account"
+        }
+      }
+    },
+    {
+      "id": "n8",
+      "name": "Check Numbers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        220
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Numbers allowed in the email = numbers in the fact lines (plus the date parts).\nfunction numbersIn(s) {\n  return (String(s).replace(/(\\d),(?=\\d)/g, '$1').match(/\\d+(?:\\.\\d+)?/g) || []);\n}\n\nfunction checkNumbers(text, factLines) {\n  const allowed = new Set(numbersIn(factLines.join(' ')));\n  const bad = numbersIn(text).filter(n => !allowed.has(n));\n  return { ok: bad.length === 0, bad: [...new Set(bad)] };\n}\n\n\nfunction esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }\nfunction parse(t) { const s = String(t || ''); const a = s.indexOf('{'), b = s.lastIndexOf('}'); try { return JSON.parse(s.slice(a, b + 1)); } catch (e) { return null; } }\nfunction textOf(j) {\n  if (typeof j.merged_response === 'string') return j.merged_response;\n  if (Array.isArray(j.content)) return j.content.map(function (c) { return c.text || ''; }).join('');\n  return j.text || j.output || '';\n}\nconst src = $('Anything To Report?').all();\nreturn $input.all().map(function (item, i) {\n  const f = src[i].json;\n  const draft = parse(textOf(item.json)) || {};\n  const check = checkNumbers((draft.subject || '') + ' ' + (draft.body || ''), f.facts);\n  const useAi = !!(draft.subject && draft.body && check.ok);\n  const subject = useAi ? draft.subject : 'Metric alert ' + f.date + ': see computed findings';\n  const body = useAi ? draft.body : f.facts.join('\\n');\n  const footer = useAi\n    ? 'Every number above was matched against the computed table before sending.'\n    : 'The AI draft was not used because it contained numbers not in the computed table (' + (check.bad.join(', ') || 'empty draft') + '). These are the computed findings.';\n  const html = '<div style=\"font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#1c1b19\">' +\n    '<div style=\"font-size:12px;color:#8a857b\">ZipBasket Metric Detective · ' + esc(f.date) + ' (sample data)</div>' +\n    esc(body).split('\\n').map(function (l) { return l.trim() ? '<p style=\"margin:4px 0\">' + l + '</p>' : ''; }).join('') +\n    '<p style=\"margin-top:14px;font-size:12px;color:#1f6f4a\">✔ ' + esc(footer) + '</p></div>';\n  return { json: { date: f.date, subject: subject, body: body, html: html, ai_used: useAi, numbers_not_in_facts: check.bad } };\n});"
+      }
+    },
+    {
+      "id": "n9",
+      "name": "Send Alert Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1340,
+        220
+      ],
+      "disabled": true,
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "you@example.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Metric Detective"
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "name": "YOUR Gmail account"
+        }
+      }
+    },
+    {
+      "id": "n10",
+      "name": "Nothing To Report",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        420
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "n11",
+      "name": "Read me",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -80
+      ],
+      "parameters": {
+        "width": 640,
+        "height": 240,
+        "content": "## Metric Detective\nDaily root-cause alerts. Code detects and explains (no AI); Claude writes the email only on alert days; every number is checked before sending.\n\n1. Click **Run Demo Days** to replay the sample incidents.\n2. To use your own data, replace generate() in **Detect and Explain**.\n3. Connect Anthropic and Gmail, set your address in **Send Alert Email** and enable it."
+      }
+    }
+  ],
+  "connections": {
+    "Run Demo Days": {
+      "main": [
+        [
+          {
+            "node": "Pick Demo Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every Morning 8 AM": {
+      "main": [
+        [
+          {
+            "node": "Pick Replay Day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Demo Days": {
+      "main": [
+        [
+          {
+            "node": "Detect and Explain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Replay Day": {
+      "main": [
+        [
+          {
+            "node": "Detect and Explain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect and Explain": {
+      "main": [
+        [
+          {
+            "node": "Anything To Report?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anything To Report?": {
+      "main": [
+        [
+          {
+            "node": "Write Alert Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Nothing To Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Alert Email": {
+      "main": [
+        [
+          {
+            "node": "Check Numbers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Numbers": {
+      "main": [
+        [
+          {
+            "node": "Send Alert Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
