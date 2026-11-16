@@ -1,5 +1,33 @@
-[
- {"date":"2026-08-31","ai_used":true,"numbers_not_in_facts":[],"subject":"All cities conversion down to 14.4% from 15.3%, Bengaluru UPI failing","body":"Conversion (orders per session) fell to 14.4% from the usual 15.3% (-5.4%).\n\nWhere: Bengaluru conversion dropped to 12.3% from 15.3%. UPI payment success in Bengaluru fell to 53.1% from 94.0%.\n\nWhy: payment success fell to 86.6% from 94.4%, and UPI is the driver (94.0% -> 82.6%). Sessions (74,840 vs 74,175), checkout rate (16.2% vs 16.2%) and items per order (5.21 vs 5.20) are steady, so the drop is at payment, not browsing or basket building.\n\nStores also alerting: HSR Layout, Indiranagar, Whitefield, Koramangala, Jayanagar.\n\nVerdict: BEHAVIOUR CHANGE.\n\nChecks for today:\n- Payments team: review the UPI gateway and bank/PSP error logs for Bengaluru.\n- Engineering: check for a recent app or checkout release touching UPI flows.\n- Ops/support: confirm whether the alerting Bengaluru stores are seeing UPI complaints."},
- {"date":"2026-09-09","ai_used":true,"numbers_not_in_facts":[],"subject":"Delhi average order value down 14.7% to Rs 362 vs usual Rs 424","body":"Delhi average order value fell to Rs 362 from a usual Rs 424 (-14.7%). GMV is Rs 11,41,534 vs usual Rs 13,25,119 (-13.9%).\n\nWhere: repeat users, the biggest segment, dropped from Rs 442 to Rs 377. Their share is steady (89.3% -> 89.2%), so this is a behaviour change, not a mix shift.\n\nWhy: items per order fell from 5.20 to 4.60. Dairy items fell from 3,578 to 1,745 (-51.2%), with 46 out-of-stock hours across stores today.\n\nStores also alerting: Rohini, Saket, Dwarka.\n\nChecks for today:\n- Inventory/supply team: review dairy stock and replenishment at the alerting stores.\n- Catalog team: confirm dairy listings and availability flags show correctly in the app.\n- Category/vendor team: check for dairy supplier delays."},
- {"date":"2026-09-17","ai_used":true,"numbers_not_in_facts":[],"subject":"All cities: AOV and conversion dip from new-user mix shift","body":"Sessions rose +36.9% to 1,06,457 and orders rose +28.0% to 15,141. GMV rose +20.1% to Rs 59,75,146.\n\nAverage order value fell -6.2% to Rs 395 (usual Rs 421). Conversion fell -6.5% to 14.2% (usual 15.2%).\n\nWhere: new users. Their share of sessions went from 15.0% to 36.1%. Their share for AOV went from 10.7% to 27.6%.\n\nWhy: this is a MIX SHIFT.\n- New-user conversion held at 10.9% -> 10.9%.\n- New-user AOV held at Rs 269 -> Rs 271.\n- Each user group behaved normally. More low-spend, low-converting users arrived.\n\nNo fix is needed beyond confirming why more new users arrived. All 20 of 20 stores also moved beyond their own thresholds."}
-]
+{
+  "source": "n8n execution 7609 (Claude Sonnet 5.5 for the ai emails; the data-problem email is a fixed template, no AI)",
+  "emails": [
+    {
+      "date": "2026-08-31",
+      "type": "ai",
+      "subject": "Bengaluru UPI payment success down, dragging conversion to 14.4%",
+      "body": "Hypothesis: Conversion fell from 15.3% to 14.4%, driven by failed UPI payments in Bengaluru, most likely a payment gateway or bank issue rather than an app release.\n\nEvidence:\n- GMV -4.6% = orders -4.5% x average order value -0.1%; orders is the bigger mover, with sessions +0.9% and conversion -5.4%.\n- Conversion fell through checkout completion (-5.2%); checkout rate is flat at -0.1%. Payment success went from 94.4% to 86.6%.\n- UPI payment success went from 94.0% to 82.6%.\n- In Bengaluru, UPI payment success went from 94.0% to 53.1%, and Bengaluru conversion from 15.3% to 12.3%.\n- Stores also alerting: HSR Layout, Indiranagar, Koramangala, Whitefield, Jayanagar.\n\nContext: All UPI payments go through one payment gateway partner. A city-level UPI drop usually means a gateway or bank issue, not an app release.\n\nChecks for today:\n- Payments team: review the gateway partner's UPI status and error logs for Bengaluru.\n- Check with the gateway partner and banks for any Bengaluru incident.\n- Engineering: confirm no payment-related release or config change went live.",
+      "number_check": "passed"
+    },
+    {
+      "date": "2026-09-05",
+      "type": "data_problem_template",
+      "subject": "Data problem, no business alerts: Powai set aside on 2026-09-05",
+      "body": "DATA PROBLEM: Powai data stops at 13:00 on 2026-09-05; a full day runs to 23:00.\nSet aside: Powai. Left out of today and the comparison days, so the other 19 stores are compared like for like.\n\nThe other 19 stores look normal. Ask the data team to reload Powai before anyone reads that store's numbers.",
+      "number_check": "passed"
+    },
+    {
+      "date": "2026-09-09",
+      "type": "ai",
+      "subject": "Delhi GMV -13.9%: fewer items per order, dairy items down",
+      "body": "Hypothesis: Delhi GMV fell because average order value dropped on fewer items per order, most likely from dairy stock-outs.\n\nEvidence:\n- GMV is Rs 11,41,534 against a usual Rs 13,25,119 (-13.9%). Orders are +0.9%, so average order value (-14.7%) is the bigger mover.\n- Average order value is Rs 362 against Rs 424. Items per order is -17.7% (4.28 vs 5.20) and price per item is +3.8%.\n- Repeat users, the biggest segment, went from Rs 442 to Rs 377 with share steady (89.3% -> 89.2%). This is a BEHAVIOUR CHANGE, not mix.\n- Dairy items are 1,745 today against 3,578 usual (-51.2%). Out-of-stock hours today across stores are 46.\n- Stores also alerting: Rohini, Saket, Dwarka.\n\nContext: Dairy is restocked twice a day by one supplier per city. More than 6 out-of-stock hours means a missed delivery.\n\nChecks for today:\n- Supply chain: confirm whether the Delhi dairy supplier missed a delivery.\n- Store ops: review dairy availability in Rohini, Saket and Dwarka.\n- Catalog team: check whether dairy items are hidden or showing as unavailable in the app.",
+      "number_check": "passed"
+    },
+    {
+      "date": "2026-09-17",
+      "type": "ai",
+      "subject": "All cities GMV +20.1% vs usual, driven by session surge",
+      "body": "Hypothesis: All-cities GMV rose +20.1% on 2026-09-17, driven by a surge in app sessions and a larger share of new users, with no sign of changed user behaviour.\n\nEvidence:\n- GMV +20.1% = orders +28.0% x average order value -6.2%. Orders are the bigger mover.\n- Orders +28.0% = sessions +36.9% x conversion -6.5%. Sessions are the bigger mover (usual 77,747, today 1,06,457).\n- New-user share of conversion mix went from 15.0% to 36.1%, while new-user conversion stayed at 10.9% -> 10.9%.\n- New-user average order value stayed flat (Rs 269 -> Rs 271), while their share rose from 10.7% to 27.6%.\n\nVerdict: MIX SHIFT for both conversion and average order value. Each user group behaved normally; more low-spend, low-converting users arrived. No fix is needed beyond confirming why.\n\nContext: Growth runs new-user campaigns without telling analytics. If the new-user share jumps, ask the growth team first.",
+      "number_check": "passed"
+    }
+  ]
+}

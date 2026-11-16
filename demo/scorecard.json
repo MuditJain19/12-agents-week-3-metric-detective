@@ -3,9 +3,13 @@
     "days_scored": 62,
     "incident_days": 7,
     "incident_days_caught_with_right_cause": 7,
+    "data_problem_days": 2,
+    "data_problems_called_correctly": 2,
     "planned_sale_quiet": true,
-    "normal_days": 54,
-    "false_alarms": 0
+    "normal_days": 52,
+    "false_alarms": 0,
+    "calculation_check_failures": 0,
+    "without_data_checks_false_alarms_on_data_and_normal_days": 2
   },
   "rows": [
     {
@@ -13,434 +17,590 @@
       "date": "2026-07-29",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 29,
       "date": "2026-07-30",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 30,
       "date": "2026-07-31",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 31,
       "date": "2026-08-01",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 32,
       "date": "2026-08-02",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 33,
       "date": "2026-08-03",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 34,
       "date": "2026-08-04",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 35,
       "date": "2026-08-05",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 36,
       "date": "2026-08-06",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 37,
       "date": "2026-08-07",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 38,
       "date": "2026-08-08",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 39,
       "date": "2026-08-09",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 40,
       "date": "2026-08-10",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 41,
       "date": "2026-08-11",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 42,
       "date": "2026-08-12",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 43,
       "date": "2026-08-13",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 44,
       "date": "2026-08-14",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 45,
       "date": "2026-08-15",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 46,
       "date": "2026-08-16",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 47,
       "date": "2026-08-17",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 48,
       "date": "2026-08-18",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 49,
       "date": "2026-08-19",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 50,
       "date": "2026-08-20",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 51,
       "date": "2026-08-21",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 52,
       "date": "2026-08-22",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 53,
       "date": "2026-08-23",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 54,
       "date": "2026-08-24",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 55,
       "date": "2026-08-25",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 56,
       "date": "2026-08-26",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 57,
       "date": "2026-08-27",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 58,
       "date": "2026-08-28",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 59,
       "date": "2026-08-29",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 60,
       "date": "2026-08-30",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 61,
       "date": "2026-08-31",
       "incident": "upi_failure",
       "findings": 1,
-      "result": "caught, right cause"
+      "set_aside": [],
+      "result": "caught, right cause",
+      "without_data_checks": [
+        "all cities: conversion -5.2%"
+      ]
     },
     {
       "day": 62,
       "date": "2026-09-01",
       "incident": "upi_failure",
       "findings": 1,
-      "result": "caught, right cause"
+      "set_aside": [],
+      "result": "caught, right cause",
+      "without_data_checks": [
+        "all cities: conversion -5.3%"
+      ]
     },
     {
       "day": 63,
       "date": "2026-09-02",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 64,
       "date": "2026-09-03",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 65,
       "date": "2026-09-04",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 66,
       "date": "2026-09-05",
-      "incident": "",
+      "incident": "store_stops_reporting",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [
+        "Powai"
+      ],
+      "result": "called a data problem (correct)",
+      "without_data_checks": [
+        "Mumbai: orders -8.1%"
+      ]
     },
     {
       "day": 67,
       "date": "2026-09-06",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 68,
       "date": "2026-09-07",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 69,
       "date": "2026-09-08",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 70,
       "date": "2026-09-09",
       "incident": "dairy_stockout",
       "findings": 1,
-      "result": "caught, right cause"
+      "set_aside": [],
+      "result": "caught, right cause",
+      "without_data_checks": [
+        "Delhi: gmv -13.8%, aov -14.6%"
+      ]
     },
     {
       "day": 71,
       "date": "2026-09-10",
       "incident": "dairy_stockout",
       "findings": 1,
-      "result": "caught, right cause"
+      "set_aside": [],
+      "result": "caught, right cause",
+      "without_data_checks": [
+        "Delhi: gmv -15.3%, aov -14.7%"
+      ]
     },
     {
       "day": 72,
       "date": "2026-09-11",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 73,
       "date": "2026-09-12",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [
+        "Powai"
+      ],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 74,
       "date": "2026-09-13",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 75,
       "date": "2026-09-14",
-      "incident": "",
+      "incident": "duplicate_load",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [
+        "Gachibowli"
+      ],
+      "result": "called a data problem (correct)",
+      "without_data_checks": [
+        "all cities: sessions 7.2%"
+      ]
     },
     {
       "day": 76,
       "date": "2026-09-15",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 77,
       "date": "2026-09-16",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 78,
       "date": "2026-09-17",
       "incident": "new_user_campaign",
       "findings": 1,
-      "result": "caught, right cause"
+      "set_aside": [],
+      "result": "caught, right cause",
+      "without_data_checks": [
+        "all cities: gmv 20.0%, sessions 37.5%, orders 28.0%, aov -7.0%, conversion -6.6%"
+      ]
     },
     {
       "day": 79,
       "date": "2026-09-18",
       "incident": "new_user_campaign",
       "findings": 1,
-      "result": "caught, right cause"
+      "set_aside": [],
+      "result": "caught, right cause",
+      "without_data_checks": [
+        "all cities: gmv 18.7%, sessions 37.5%, orders 27.7%, conversion -7.1%, aov -6.9%"
+      ]
     },
     {
       "day": 80,
       "date": "2026-09-19",
       "incident": "new_user_campaign",
       "findings": 1,
-      "result": "caught, right cause"
+      "set_aside": [
+        "Powai"
+      ],
+      "result": "caught, right cause",
+      "without_data_checks": [
+        "all cities: gmv 18.5%, sessions 37.7%, orders 27.3%, conversion -7.5%, aov -7.1%"
+      ]
     },
     {
       "day": 81,
       "date": "2026-09-20",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 82,
       "date": "2026-09-21",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [
+        "Gachibowli"
+      ],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 83,
       "date": "2026-09-22",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 84,
       "date": "2026-09-23",
       "incident": "anniversary_sale",
       "findings": 0,
-      "result": "quiet on planned sale (correct)"
+      "set_aside": [],
+      "result": "quiet on planned sale (correct)",
+      "without_data_checks": []
     },
     {
       "day": 85,
       "date": "2026-09-24",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 86,
       "date": "2026-09-25",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 87,
       "date": "2026-09-26",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [
+        "Powai"
+      ],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 88,
       "date": "2026-09-27",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     },
     {
       "day": 89,
       "date": "2026-09-28",
       "incident": "",
       "findings": 0,
-      "result": "quiet (correct)"
+      "set_aside": [
+        "Gachibowli"
+      ],
+      "result": "quiet (correct)",
+      "without_data_checks": []
     }
   ]
 }

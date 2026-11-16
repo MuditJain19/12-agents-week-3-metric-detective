@@ -43,6 +43,12 @@ const INCIDENTS = [
   { id: 'anniversary_sale', days: [84], note: 'Planned sale, in the business calendar; should not alert' }
 ];
 
+// Planted DATA problems (pipeline faults, not business events). The agent should call these data problems.
+const DATA_INCIDENTS = [
+  { id: 'store_stops_reporting', day: 66, store: 'Powai', last_hour: 13, share_of_day: 0.45, note: 'Powai data stops at 1 PM; only 45% of the day arrives' },
+  { id: 'duplicate_load', day: 75, store: 'Gachibowli', note: 'Gachibowli rows loaded twice' }
+];
+
 function dateOf(d) {
   const t = new Date(START + 'T00:00:00Z');
   t.setUTCDate(t.getUTCDate() + d);
@@ -74,7 +80,7 @@ function generate(seed) {
           const sessions = Math.round(storeSessions * u.share * (campaign && ut === 'new' ? 3.2 : 1) * noise(0.012));
           const checkoutRate = u.checkout * noise(0.012) * (sale ? 1.1 : 1) * (stockout ? 0.94 : 1);
           const checkouts = Math.round(sessions * checkoutRate);
-          funnel.push({ date, city, store, user_type: ut, sessions, checkouts });
+          funnel.push({ date, city, store, user_type: ut, sessions, checkouts, last_event_hour: 23 });
           let retryToCard = 0;
           for (const [pm, p] of Object.entries(PAYMENTS)) {
             let pmCheckouts = Math.round(checkouts * p.share * noise(0.008));
@@ -83,16 +89,19 @@ function generate(seed) {
             if (pm === 'Card') pmCheckouts += retryToCard;
             const ords = Math.min(pmCheckouts, Math.round(pmCheckouts * Math.min(success, 0.995)));
             const itemsPerOrder = u.items * noise(0.012) * (stockout ? 0.80 : 1);
-            const items = Math.round(ords * itemsPerOrder);
-            let gmv = 0;
+            const rawItems = ords * itemsPerOrder;
+            let gmv = 0, shareSum = 0;
             for (const [cat, cc] of Object.entries(CATEGORIES)) {
               let share = cc.share;
               if (stockout) share = cat === 'dairy' ? cc.share * 0.12 : cc.share * (1 + (0.22 * 0.88 * 0.3) / 0.78);
-              const ci = items * share;
+              shareSum += share;
+              const ci = Math.round(rawItems) * share;
               const cg = ci * cc.price * (ut === 'new' ? NEW_USER_PRICE_FACTOR : 1) * noise(0.01);
               catItems[cat] = catItems[cat] || { items: 0, gmv: 0 };
               catItems[cat].items += ci; catItems[cat].gmv += cg; gmv += cg;
             }
+            // Items in the orders table = items across categories (on stockout days the lost dairy items are gone from both).
+            const items = Math.round(Math.round(rawItems) * shareSum);
             orders.push({ date, city, store, user_type: ut, payment: pm, checkouts: pmCheckouts, orders: ords, gmv: Math.round(gmv), items });
           }
         }
@@ -103,7 +112,20 @@ function generate(seed) {
       }
     }
   }
+  // Data problems are applied after the business data, so every other number stays the same.
+  for (const di of DATA_INCIDENTS) {
+    const date = dateOf(di.day), hit = r => r.date === date && r.store === di.store;
+    if (di.id === 'store_stops_reporting') {
+      const cut = r => { ['sessions', 'checkouts', 'orders', 'gmv', 'items'].forEach(k => { if (k in r) r[k] = Math.round(r[k] * di.share_of_day); }); };
+      funnel.filter(hit).forEach(r => { cut(r); r.last_event_hour = di.last_hour; });
+      orders.filter(hit).forEach(cut);
+      cats.filter(hit).forEach(cut);
+    }
+    if (di.id === 'duplicate_load') {
+      [funnel, orders, cats].forEach(t => t.filter(hit).forEach(r => t.push(Object.assign({}, r))));
+    }
+  }
   return { start: START, days: DAYS, funnel, orders, cats, calendar: CALENDAR.map(e => ({ date: dateOf(e.day), name: e.name })) };
 }
 
-if (typeof module !== 'undefined') module.exports = { generate, dateOf, INCIDENTS, DAYS };
+if (typeof module !== 'undefined') module.exports = { generate, dateOf, INCIDENTS, DATA_INCIDENTS, DAYS };

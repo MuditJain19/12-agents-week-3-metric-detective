@@ -1,0 +1,106 @@
+[
+  {
+    "case": "clean day (no change)",
+    "status": "ok",
+    "set_aside": [],
+    "issues": [],
+    "business_findings": 0
+  },
+  {
+    "case": "a store missing from the orders table",
+    "status": "stores_set_aside",
+    "set_aside": [
+      "Bandra"
+    ],
+    "issues": [
+      "store_missing: Bandra has no rows in the orders table."
+    ],
+    "business_findings": 0
+  },
+  {
+    "case": "duplicate rows",
+    "status": "stores_set_aside",
+    "set_aside": [
+      "Saket"
+    ],
+    "issues": [
+      "duplicate_rows: Saket has 6 duplicate rows in the categories table (the same data loaded twice).",
+      "tables_disagree: Saket: items in the orders table (3178) and the category table (6356) differ by 100.0%."
+    ],
+    "business_findings": 0
+  },
+  {
+    "case": "a negative GMV value",
+    "status": "stores_set_aside",
+    "set_aside": [
+      "Thane"
+    ],
+    "issues": [
+      "impossible_values: Thane has impossible values: negative or missing gmv, orders with no GMV."
+    ],
+    "business_findings": 0
+  },
+  {
+    "case": "more orders than payment attempts",
+    "status": "stores_set_aside",
+    "set_aside": [
+      "Madhapur"
+    ],
+    "issues": [
+      "impossible_values: Madhapur has impossible values: more orders than payment attempts."
+    ],
+    "business_findings": 0
+  },
+  {
+    "case": "data that stops at 4 PM",
+    "status": "stores_set_aside",
+    "set_aside": [
+      "Jayanagar"
+    ],
+    "issues": [
+      "data_stops_early: Jayanagar data stops at 16:00 on 2026-08-27; a full day runs to 23:00."
+    ],
+    "business_findings": 0
+  },
+  {
+    "case": "orders and category tables disagree",
+    "status": "stores_set_aside",
+    "set_aside": [
+      "Andheri"
+    ],
+    "issues": [
+      "tables_disagree: Andheri: items in the orders table (2709) and the category table (2168) differ by 20.0%."
+    ],
+    "business_findings": 0
+  },
+  {
+    "case": "a whole day missing",
+    "status": "no_data",
+    "set_aside": [],
+    "issues": [
+      "missing_day: No data at all for 2026-08-27."
+    ],
+    "business_findings": 0
+  },
+  {
+    "case": "too many stores broken (6 of 20)",
+    "status": "too_much_bad_data",
+    "set_aside": [
+      "Koramangala",
+      "Saket",
+      "Andheri",
+      "Powai",
+      "Dadar",
+      "Gachibowli"
+    ],
+    "issues": [
+      "data_stops_early: Koramangala data stops at 9:00 on 2026-08-27; a full day runs to 23:00.",
+      "data_stops_early: Saket data stops at 9:00 on 2026-08-27; a full day runs to 23:00.",
+      "data_stops_early: Andheri data stops at 9:00 on 2026-08-27; a full day runs to 23:00.",
+      "data_stops_early: Powai data stops at 9:00 on 2026-08-27; a full day runs to 23:00.",
+      "data_stops_early: Dadar data stops at 9:00 on 2026-08-27; a full day runs to 23:00.",
+      "data_stops_early: Gachibowli data stops at 9:00 on 2026-08-27; a full day runs to 23:00."
+    ],
+    "business_findings": 0
+  }
+]

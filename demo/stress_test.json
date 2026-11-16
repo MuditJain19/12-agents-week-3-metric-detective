@@ -2,7 +2,11 @@
   "datasets": 20,
   "incident_days": 140,
   "caught_with_right_cause": 139,
-  "normal_days": 1080,
-  "false_alarm_days": 11,
-  "planned_sale_quiet": 20
+  "data_problem_days": 40,
+  "data_problems_found": 40,
+  "data_days_with_an_unrelated_noise_alert": 2,
+  "normal_days": 1040,
+  "false_alarm_days": 10,
+  "planned_sale_quiet": 20,
+  "calculation_check_failures": 0
 }
